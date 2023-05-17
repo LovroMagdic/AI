@@ -1,5 +1,24 @@
 import sys
 
+def redundant(premise, result):
+    remove = []
+    add = True
+
+    for literal in result:
+        if len(result) == 1:
+            for each in premise:
+                if literal in each:
+                    remove.append(each)
+            for each in remove:
+                premise.remove(each)
+            return premise, add
+        elif len(result) > 1:
+            for each in premise:
+                if literal in each and len(each) == 1:
+                    add = False
+                    return premise, add
+    return premise, add
+
 def revert():
     file = open(sys.argv[2],"r", encoding='utf-8').readlines()
     #file = open("cooking_coffee.txt", "r").readlines()
@@ -78,24 +97,6 @@ def resolve(list1, list2, resolvent):
     counter = 0
     flag = True
     res = negate(list1)
-    '''
-    for each in res:
-        if each in list2:
-            counter += 1
-    if counter == len(res):
-        flag = True
-    else:
-        flag = False
-
-    if flag == False:
-        for each in list2:
-            if each in list1:
-                counter += 1
-        if counter == len(list2):
-            flag = True
-        else:
-            flag = False
-    '''
 
     if flag:
 
@@ -113,20 +114,7 @@ def resolve(list1, list2, resolvent):
                 l.remove(each)
             else:
                 l.append(each)
-        '''
-        for each in list1:
-            if "~" in each:
-                each = each.replace("~", "")
-            else:
-                each = "~" + each
-            l.append(each)
-        for each in list2:
-            if each in l:
-                duplicate.append(each)
-                l.remove(each)
-            else:
-                l.append(each)
-        '''
+
         l = list(dict.fromkeys(l))
         #tautology
         for each in l:
@@ -150,8 +138,6 @@ def checkNIL(clause):
     for each in clause:
         tmp = negate(each)
         if tmp in clause:
-            #print(clause)
-            #print("NIL za ", tmp)
             return True
     return False
 
@@ -165,20 +151,16 @@ def all(clause, premise):
             tmp = negate_clause(c[i])
             for p in premise:
                 if tmp[0] in p:
-                    #print("rjesavamo za",c[i])
-                    #print(c)
-                    #print(p)
                     flag, result = resolve(c, p, c[i])
-                    #print(result)
-                    #print(flag)
-                    #print("*************")
                     if flag:
                         if (result not in clause) and (result not in premise):
-                            clause.append(result)
-                            premise.append(result)
-                            key = " v ".join(result)
-                            line[key] = [c] + [p]
-                    #print(line)
+                            premise, add = redundant(premise, result)
+                            if add:
+                                clause.append(result)
+                                premise.append(result)
+                                key = " v ".join(result)
+                                line[key] = [c] + [p]
+
                 end = checkNIL(clause)
                 if end:
                     break
@@ -186,7 +168,6 @@ def all(clause, premise):
             if end:
                 if '' not in line:
                     line['']= [c] + [p]
-                #print(line)
                 reverse(line)
                 print("[CONCLUSION]:",final,"is true")
                 return 0
@@ -203,20 +184,13 @@ if sys.argv[1] == "resolution":
         each = each.lower()
         f.append(each)
 
-
     for each in f:
         if each.startswith("#"):
             f.remove(each)
 
-
     goal = f.pop().split(" v ")
     destination = goal
     goal = negate(goal)
-    #print(goal)
-    #print(goal)
-    #g = " v ".join(goal)
-    #goal = []
-    #goal.append(g)
 
     premise = []
     clause = []
@@ -227,45 +201,8 @@ if sys.argv[1] == "resolution":
     for each in goal:  
         each = each.split(" v ")
         clause.append(each)
-    #print(clause)
 
     all(clause, premise)
-    '''
-        line = dict()
-        result = []
-        flag = True
-        cnt = 0
-        for c in clause:
-            for i in range(len(c)):
-                tmp = negate_clause(c[i])
-                for p in premise:
-                    if tmp[0] in p:
-                        #print("rjesavamo za",c[i])
-                        #print(c)
-                        #print(p)
-                        flag, result = resolve(c, p, c[i])
-                        #print(result)
-                        #print(flag)
-                        #print("*************")
-                        if flag:
-                            if (result not in clause) and (result not in premise):
-                                clause.append(result)
-                                premise.append(result)
-                                key = " v ".join(result)
-                                line[key] = [c] + [p]
-                        #print(line)
-                    end = checkNIL(clause)
-                    if end:
-                        break
-                final = " V ".join(destination)
-                if end:
-                    if '' not in line:
-                        line['']= [c] + [p]
-                    #print(line)
-                    #reverse(line)
-                    print("[CONCLUSION]:",final,"is true")
-                    exit()
-        print("[CONCLUSION]:",final,"is unknown")'''
 
 elif sys.argv[1] == "cooking1":
     file = open(sys.argv[2],"r", encoding='utf-8').readlines()
@@ -326,6 +263,6 @@ elif sys.argv[1] == "cooking1":
             dont.append(each)
             print("user added > ", each[0])
 
-elif sys.argv[1] == "cooking1":
+elif sys.argv[1] == "cooking":
     cook()
 
