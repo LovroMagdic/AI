@@ -99,7 +99,7 @@ def A_STAR(start, goal, graph, h):
 
     heapq.heapify(q)
 
-    heapq.heappush(q, (0, start))
+    heapq.heappush(q, (0, start, 0))   #(put+heur, ime, put - heur)
     states[start] = ["NULL"] + [0] + [0]
     
     while q:
@@ -109,11 +109,18 @@ def A_STAR(start, goal, graph, h):
         for each in graph[visited[1]]:
             if each.split(",")[0] not in closed:
                 hv = int(h[each.split(",")[0]])
-                heapq.heappush(q, ((int(each.split(",")[1]) + int(visited[0]) + hv), str(each.split(",")[0])))
+                if len(closed) >= 2:
+                    heapq.heappush(q, ((hv + int(each.split(",")[1]) + int(visited[2])), str(each.split(",")[0]), int(each.split(",")[1]) + int(visited[2])))
+                else:
+                    heapq.heappush(q, ((int(each.split(",")[1]) + int(visited[2]) + hv), str(each.split(",")[0]), int(each.split(",")[1]) + int(visited[2])))
 
-                if each.split(",")[0] not in states.keys():
+
+                if (each.split(",")[0] not in states.keys()) and (len(closed) >= 2):
+                    states[each.split(",")[0]] = [visited[1]] + [int(each.split(",")[1])] + [int(each.split(",")[1]) + int(visited[2])]
+                elif (each.split(",")[0] not in states.keys()):
                     states[each.split(",")[0]] = [visited[1]] + [int(each.split(",")[1])] + [int(each.split(",")[1]) + int(visited[0]) + hv]
-                if each.split(",")[0] in states.keys() and int(each.split(",")[1]) + int(visited[0]) + hv < (states[each.split(",")[0]])[2]:
+
+                if each.split(",")[0] in states.keys() and (int(each.split(",")[1]) + int(visited[2]) + hv < (states[each.split(",")[0]])[2]):
                     states.pop(each.split(",")[0])
                     states[each.split(",")[0]] = [visited[1]] + [int(each.split(",")[1])] + [int(each.split(",")[1]) + int(visited[0]) + hv]
 
@@ -175,7 +182,7 @@ args = parser.parse_args()
 
 
 f = codecs.open(args.ss, "r", "utf-8").readlines()
-# f = open("istra.txt", "r").readlines()
+# f = open("istra.txt", "r", encoding="utf8").readlines()
 f = [x.strip() for x in f]
 for i in f:
     if i.startswith("#"):
@@ -203,11 +210,11 @@ h = {'Baderna': '25',
 'Grožnjan': '17', 
 'Kanfanar': '30', 
 'Labin': '35', 
-'Lupoglav': '35', 
+'Lupoglav': '13', 
 'Medulin': '61', 
 'Motovun': '12', 
 'Opatija': '26', 
-'Pazin': '40', 
+'Pazin': '17', 
 'Poreč': '32', 
 'Pula': '57', 
 'Rovinj': '40', 

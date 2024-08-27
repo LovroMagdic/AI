@@ -43,12 +43,12 @@ def predict(header, row, tree, result_1,result_2,result_3 ):
     return decision
 
 
-def transform_data(data,parent):
-    #print("ovo je trans_data za ",parent)
+def transform_data(data,parent, key_word):
+    index = header.index(parent)
     new_data = []
     for each in data:
-        if parent in each:
-            each.remove(parent)
+        if each[index] == key_word:
+            each.remove(each[index])
             new_data.append(each)
     return new_data
 
@@ -175,14 +175,14 @@ def ID3(parent, data, parent_data, header, number, tree_node):
     for each in effects[max[0]]:
         new_header = []
         #za svaki sunny rainy cloudy pozvat ID3 i racunat sa manjim dataset, valjda
-        trans_data = transform_data(data, each)
+        trans_data = transform_data(data, max[0], each)
         #print(trans_data)
         for head in header:
             if head != max[0]:
                 new_header.append(head)
         #print()
         print("pregledavam efekt ", each)
-        #print(trans_data)
+        print(trans_data)
         #print()
         ID3(each, trans_data, parent_data, new_header, number, tree_node)
 
@@ -191,7 +191,7 @@ def ID3(parent, data, parent_data, header, number, tree_node):
 
 #ovo je MAIN PROGRAM
 #read csv file
-file = open('logic_small.csv')
+file = open('titanic_heldout_categorical.csv')
 csvreader = csv.reader(file)
 header = []
 rows = []
@@ -223,13 +223,15 @@ yes, no, unkown = get_yes_no(rows, result_1, result_2, result_3)
 number = yes + no + unkown # number of actual data
 entropy = calc_entropy(yes, no, unkown, result_3)
 
+
+
 tree = dict()
 tree_node = ""
 ID3("NULL", rows, rows, header, number, tree_node)
 print(tree)
 
 # here starts prediction method
-file = open('logic_small_test.csv')
+file = open('titanic_test_categorical.csv')
 csvreader = csv.reader(file)
 header = []
 rows = []
